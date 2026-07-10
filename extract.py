@@ -1,6 +1,6 @@
 # Importing required libraries
 
-import time, os, json, logging, requests, zipfile, gzip
+import time, os, logging, requests
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -15,6 +15,14 @@ def extract_amp(startdate:str, enddate:str):
     Notes:
         - The expected format is YYYYMMDDTHH
         - Use 24-hour time and include the "T" separator
+
+    Diagram:
+        [start] -> validate dates -> init logs -> prepare folders -> load .env ->
+        build request -> call API -> check status:
+            200-299 -> save zip -> done
+            400-499 -> log client error -> done
+            429/500+ -> retry with backoff -> loop
+            else -> log unknown status -> done
     """
 
     # Setting up folders and file format for logging and data
@@ -46,7 +54,7 @@ def extract_amp(startdate:str, enddate:str):
 
     # Creating data directory
     data_dir = 'data'
-    os.makedirs(data_dir, exist_ok=True) ## creates a folder called 'data' - if it already exists then it's ok - i.e. doesnt show an error or do anything.
+    os.makedirs(data_dir, exist_ok=True) ## creates a folder called 'data' - checks if it already exists and if not then creates it.
     # Setting out API call Parameters
 
     url = 'https://analytics.eu.amplitude.com/api/2/export'
@@ -92,13 +100,13 @@ def extract_amp(startdate:str, enddate:str):
             else:
                 logger.error('No data returned')     # Indicates that although the API call has functioned - no data has actually been delivered.
                 break
-        elif 400 <= status < 500:
+        elif 400 <= status < 500 and status != 429:
             logger.error(f'Error - {status} - check https://amplitude.com/docs/apis/analytics/export#status-codes')
             break
-        elif status <= 100 or status >=500:
-            time.sleep(delay)
+        elif status <= 100 or status >=500 or status == 429 :
+            time.sleep(delay*attempt)      # Increases the delay each time an attempt fails
             logger.info(f'Status code {status}. Retrying. This was attempt {attempt}') # Adding info line to update log based on status of the response.
-            attempt += 1
+            attempt += 1  # Updates attempt no and tries again
         else:
             logger.error(f'Error - status message: {status}. Please fix')
             break
