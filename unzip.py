@@ -1,41 +1,78 @@
-import os          
-import zipfile     
-import gzip        
-import shutil     
-import tempfile    
+﻿import os
+import zipfile
+import gzip
+import shutil
+import tempfile
+import glob
 
-temp_dir = tempfile.mkdtemp()   # Makes a temporary folder to extract all the folder paths out to.
+# Create a temporary extraction directory
+temp_dir = tempfile.mkdtemp()
 
-data_dir= 'data'
-os.makedirs(data_dir, exist_ok=True)  # Makes a local folder called 'data' if it doesn't already exist.
+data_dir = 'data'
+os.makedirs(data_dir, exist_ok=True)
 
-with zipfile.ZipFile('data/20260704T00-20260704T00.zip', 'r') as zip_ref:        # Extracts all the zip files into the temporary folder.
-    zip_ref.extractall(temp_dir)
+# Find all .zip files under `data/` (including subdirectories)
+zip_paths = glob.glob(os.path.join(data_dir, '**', '*.zip'), recursive=True)
+if not zip_paths:
+    print('No zip files found in data/')
 
-day_folder = next(f for f in os.listdir(temp_dir) if f.isdigit())  # Finds all folders with numeric names only and returns the file path as a variable to be traversed
-day_path = os.path.join(temp_dir, day_folder)
+for zip_path in zip_paths:
+    print(f'Extracting {zip_path} into {temp_dir}')
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
+        # If extraction succeeded, remove the source zip file
+        try:
+            os.remove(zip_path)
+            print(f'Deleted source zip {zip_path}')
+        except Exception as e:
+            print(f'Failed to delete {zip_path}: {e}')
+    except Exception as e:
+        print(f'Failed to extract {zip_path}: {e}')
+        # Move the bad or non-zip file to a quarantine folder for inspection
+        quarantine_dir = os.path.join(data_dir, 'quarantine')
+        os.makedirs(quarantine_dir, exist_ok=True)
+        try:
+            dest = os.path.join(quarantine_dir, os.path.basename(zip_path))
+            shutil.move(zip_path, dest)
+            print(f'Moved failed zip to quarantine: {dest}')
+        except Exception as me:
+            print(f'Failed to move {zip_path} to quarantine: {me}')
 
-# Directory walking and file processing:
-for root, _, files in os.walk(day_path):
+# Walk extracted content, decompress .gz files and write .json files into the root of `data/`
+# Skip decompression if the target already exists. If all extractions and decompressions
+# succeed, remove the temporary directory.
+all_ok = True
+decompressed_any = False
+for root, _, files in os.walk(temp_dir):
     for file in files:
         if file.endswith('.gz'):
-            print(file)
+            gz_path = os.path.join(root, file)
+            out_dir = data_dir  # flatten into data/ root as requested
+            os.makedirs(out_dir, exist_ok=True)
 
-# os.walk() recursively traverses all subdirectories
-# tuple unpacking: roor, _, files (underscore ignores directories list)
-# print returns the file name to the screen
+            out_name = file[:-3]
+            out_path = os.path.join(out_dir, out_name)
 
-# Now reading the contents of the .gz file and writing the content to a new json file in the data_dir
-gz_path = os.path.join(root, file)
-json_filename = file[:-3]
-output_path = os.path.join(data_dir, json_filename)
+            if os.path.exists(out_path):
+                print(f'Skipping {gz_path}: {out_path} already exists')
+                continue
 
-with gzip.open(gz_path, 'rb') as gz_file, open(output_path, 'wb') as out_file:
-    shutil.copyfileobj(gz_file, out_file)
+            try:
+                with gzip.open(gz_path, 'rb') as gz_in, open(out_path, 'wb') as out_f:
+                    shutil.copyfileobj(gz_in, out_f)
+                decompressed_any = True
+                print(f'Decompressed {gz_path} -> {out_path}')
+            except Exception as e:
+                all_ok = False
+                print(f'Failed to decompress {gz_path}: {e}')
 
-# String slicing: file[:-3] removes last three characters (.gz)
-# Binary file handling: 'rb' (read binary) and 'wb' (write binary)
-# shutil.copyfileobj(): Efficient copying between file objects.
-
-# Cleanup:
-shutil.rmtree(temp_dir)
+# Remove temporary directory only if all operations succeeded
+if all_ok:
+    try:
+        shutil.rmtree(temp_dir)
+        print(f'Removed temporary directory {temp_dir}')
+    except Exception as e:
+        print(f'Failed to remove temp directory {temp_dir}: {e}')
+else:
+    print(f'Temporary directory retained at {temp_dir} for inspection (some operations failed)')
