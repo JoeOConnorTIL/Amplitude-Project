@@ -15,14 +15,6 @@ def extract_amp(startdate:str, enddate:str):
     Notes:
         - The expected format is YYYYMMDDTHH
         - Use 24-hour time and include the "T" separator
-
-    Diagram:
-        [start] -> validate dates -> init logs -> prepare folders -> load .env ->
-        build request -> call API -> check status:
-            200-299 -> save zip -> done
-            400-499 -> log client error -> done
-            429/500+ -> retry with backoff -> loop
-            else -> log unknown status -> done
     """
 
     # Setting up folders and file format for logging and data
@@ -113,4 +105,4 @@ def extract_amp(startdate:str, enddate:str):
 
 
 if __name__ == '__main__':
-    extract_amp('20260704T00','20260705T00')
+    extract_amp('20260601T00','20260602T00')
