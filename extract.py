@@ -102,7 +102,3 @@ def extract_amp(startdate:str, enddate:str):
         else:
             logger.error(f'Error - status message: {status}. Please fix')
             break
-
-
-if __name__ == '__main__':
-    extract_amp('20260601T00','20260602T00')
