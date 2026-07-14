@@ -78,5 +78,3 @@ def unzip_all():
             print(f'Failed to remove temp directory {temp_dir}: {e}')
     else:
         print(f'Temporary directory retained at {temp_dir} for inspection (some operations failed)')
-
-unzip_all()
