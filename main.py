@@ -2,9 +2,9 @@
 import os, boto3, time, logging, requests, zipfile, gzip, shutil, tempfile, glob
 from dotenv import load_dotenv
 from datetime import datetime
-from extract import extract_amp
-from unzip import unzip_all
-from load import load_to_s3
+from modules.extract import extract_amp
+from modules.unzip import unzip_all
+from modules.load import load_to_s3
 
 # Define timeframes
 

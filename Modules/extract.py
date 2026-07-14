@@ -34,7 +34,7 @@ def extract_amp(startdate:str, enddate:str):
 
     # Selecting logger
     logger = logging.getLogger()
-    logger.info('Logger successfully initiated')
+    logger.info('Extraction Logger successfully initiated')
 
     # Checking that date arguments have been entered correctly
     start_dt = datetime.strptime(startdate, '%Y%m%dT%H')

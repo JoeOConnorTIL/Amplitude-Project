@@ -4,10 +4,30 @@ import gzip
 import shutil
 import tempfile
 import glob
+from datetime import datetime
+import logging
 
 # Create a temporary extraction directory
 
 def unzip_all():
+
+    # Setting up logging (differentiating from extract/load logs by adding unzip_ precursor)
+    timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') 
+    log_dir = 'logs'
+    os.makedirs(log_dir, exist_ok=True) 
+    log_filename = f'{log_dir}/unzip_{timestamp}.log'
+
+    logging.basicConfig(
+        filename = log_filename,
+        format = '%(asctime)s - %(levelname)s - %(message)s', 
+        level = logging.INFO
+    )
+
+    logger = logging.getLogger()
+    logger.info('Unzipping Logger successfully initiated')
+
+
+
     temp_dir = tempfile.mkdtemp()
 
     data_dir = 'data'
@@ -16,30 +36,30 @@ def unzip_all():
     # Find all .zip files under `data/` (including subdirectories)
     zip_paths = glob.glob(os.path.join(data_dir, '**', '*.zip'), recursive=True)
     if not zip_paths:
-        print('No zip files found in data/')
+        logger.info('No zip files found in data/')
 
     for zip_path in zip_paths:
-        print(f'Extracting {zip_path} into {temp_dir}')
+        logger.info(f'Extracting {zip_path} into {temp_dir}')
         try:
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(temp_dir)
             # If extraction succeeded, remove the source zip file
             try:
                 os.remove(zip_path)
-                print(f'Deleted source zip {zip_path}')
+                logger.info(f'Deleted source zip {zip_path}')
             except Exception as e:
-                print(f'Failed to delete {zip_path}: {e}')
+                logger.error(f'Failed to delete {zip_path}: {e}')
         except Exception as e:
-            print(f'Failed to extract {zip_path}: {e}')
+            logger.error(f'Failed to extract {zip_path}: {e}')
             # Move the bad or non-zip file to a quarantine folder for inspection
             quarantine_dir = os.path.join(data_dir, 'quarantine')
             os.makedirs(quarantine_dir, exist_ok=True)
             try:
                 dest = os.path.join(quarantine_dir, os.path.basename(zip_path))
                 shutil.move(zip_path, dest)
-                print(f'Moved failed zip to quarantine: {dest}')
+                logger.info(f'Moved failed zip to quarantine: {dest}')
             except Exception as me:
-                print(f'Failed to move {zip_path} to quarantine: {me}')
+                logger.error(f'Failed to move {zip_path} to quarantine: {me}')
 
     # Walk extracted content, decompress .gz files and write .json files into the root of `data/`
     # Skip decompression if the target already exists. If all extractions and decompressions
@@ -57,24 +77,24 @@ def unzip_all():
                 out_path = os.path.join(out_dir, out_name)
 
                 if os.path.exists(out_path):
-                    print(f'Skipping {gz_path}: {out_path} already exists')
+                    logger.info(f'Skipping {gz_path}: {out_path} already exists')
                     continue
 
                 try:
                     with gzip.open(gz_path, 'rb') as gz_in, open(out_path, 'wb') as out_f:
                         shutil.copyfileobj(gz_in, out_f)
                     decompressed_any = True
-                    print(f'Decompressed {gz_path} -> {out_path}')
+                    logger.info(f'Decompressed {gz_path} -> {out_path}')
                 except Exception as e:
                     all_ok = False
-                    print(f'Failed to decompress {gz_path}: {e}')
+                    logger.info(f'Failed to decompress {gz_path}: {e}')
 
     # Remove temporary directory only if all operations succeeded
     if all_ok:
         try:
             shutil.rmtree(temp_dir)
-            print(f'Removed temporary directory {temp_dir}')
+            logger.info(f'Removed temporary directory {temp_dir}')
         except Exception as e:
-            print(f'Failed to remove temp directory {temp_dir}: {e}')
+            logger.error(f'Failed to remove temp directory {temp_dir}: {e}')
     else:
-        print(f'Temporary directory retained at {temp_dir} for inspection (some operations failed)')
+        logger.info(f'Temporary directory retained at {temp_dir} for inspection (some operations failed)')

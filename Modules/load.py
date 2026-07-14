@@ -19,7 +19,7 @@ def load_to_s3():
     )
 
     logger = logging.getLogger()
-    logger.info('Logger successfully initiated')
+    logger.info('Load Logger successfully initiated')
 
     # Loading access/secret keys from .env file
     load_dotenv()
