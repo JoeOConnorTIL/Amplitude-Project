@@ -4,7 +4,17 @@ import time, os, logging, requests
 from datetime import datetime
 from dotenv import load_dotenv
 
-def extract_amp(startdate:str, enddate:str):
+logger = logging.getLogger()
+url = 'https://analytics.eu.amplitude.com/api/2/export'
+data_dir = 'data'
+# Retrieving keys from .env file
+load_dotenv()
+api_key=os.getenv('AMP_API_KEY')
+secret_key=os.getenv('AMP_SECRET_KEY')
+max_retry = 3
+delay = 10
+
+def extract_amp(url, startdate:str, enddate:str, api_key, secret_key, max_retry=3, delay=10):
     """
     Export Amplitude data for the given range.
 
@@ -19,21 +29,21 @@ def extract_amp(startdate:str, enddate:str):
 
     # Setting up folders and file format for logging and data
 
-    timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') # gives the date/time now
-    log_dir = 'logs'
-    os.makedirs(log_dir, exist_ok=True) # creates a folder called 'logs' - if it already exists then it's ok - i.e. doesnt show an error or do anything.
-    log_filename = f'{log_dir}/extract_{timestamp}.log' # creating a string for the filename based on the timestamp
+    #timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') # gives the date/time now
+    #log_dir = 'logs'
+    #os.makedirs(log_dir, exist_ok=True) # creates a folder called 'logs' - if it already exists then it's ok - i.e. doesnt show an error or do anything.
+    #log_filename = f'{log_dir}/extract_{timestamp}.log' # creating a string for the filename based on the timestamp
 
     # Configuring log - Note: if logger already set up in main script then that will be the default log - otherwise this will set up a log for extracts. I have left this in the function incase it is to be used elsewhere.
-    logging.basicConfig(
-        filename = log_filename,
-        filemode = 'a',
-        format = '%(asctime)s - %(levelname)s - %(message)s', 
-        level = logging.INFO
-    )
+    #logging.basicConfig(
+    #    filename = log_filename,
+    #    filemode = 'a',
+    #    format = '%(asctime)s - %(levelname)s - %(message)s', 
+    #    level = logging.INFO
+    #)
 
     # Selecting logger
-    logger = logging.getLogger()
+    #logger = logging.getLogger()
     logger.info('Extraction Logger successfully initiated')
 
     # Checking that date arguments have been entered correctly
@@ -45,27 +55,27 @@ def extract_amp(startdate:str, enddate:str):
         return
 
     # Creating data directory
-    data_dir = 'data'
+    # data_dir = 'data'
     os.makedirs(data_dir, exist_ok=True) ## creates a folder called 'data' - checks if it already exists and if not then creates it.
     # Setting out API call Parameters
 
-    url = 'https://analytics.eu.amplitude.com/api/2/export'
+    # url = 'https://analytics.eu.amplitude.com/api/2/export'
 
-    start = f'{startdate}'
-    end = f'{enddate}'
+    #start = startdate
+    #end = enddate
     params = {
-        'start': start,
-        'end' : end
+        'start': startdate,
+        'end' : enddate
     }
     # Retrieving keys from .env file
-    load_dotenv()
-    api_key=os.getenv('AMP_API_KEY')
-    secret_key=os.getenv('AMP_SECRET_KEY')
+    # load_dotenv()
+    # api_key=os.getenv('AMP_API_KEY')
+    # secret_key=os.getenv('AMP_SECRET_KEY')
 
     # setting variables for API call
-    max_retry = 5
+    # max_retry = 5
     attempt = 0
-    delay = 10
+    #delay = 10
 
 
     response = requests.get(url, params=params, auth=(api_key, secret_key))
@@ -82,7 +92,7 @@ def extract_amp(startdate:str, enddate:str):
             data = response.content   #this will be a zip file
             if len(data) > 0 :
                 try:
-                    filename = f'{data_dir}/{start}-{end}.zip'
+                    filename = f'{data_dir}/{startdate}-{enddate}.zip'
                     with open(filename, 'wb') as file:
                         file.write(data)
                     logger.info(f'File {filename} was successfully saved to data folder.')
