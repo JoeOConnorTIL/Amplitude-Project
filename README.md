@@ -22,7 +22,10 @@ Logging is set up in `main.py` so the whole pipeline writes clear messages in on
 Here is the basic logging pattern used in the project:
 
 ```python
-import logging
+timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') # gives the date/time now
+log_dir = 'logs'
+os.makedirs(log_dir, exist_ok=True) # Checks if a logs folder exist, if not then makes it.
+log_filename = f'{log_dir}/amp_pipeline_{timestamp}.log' # creating a string for the log filename based on the timestamp
 
 logging.basicConfig(
     filename='logs/example.log',
@@ -70,6 +73,11 @@ This step runs after `extract.py` and before the upload step so the loader gets 
 ### 1. Logging and output directories
 
 Creates directories for data and logs and prepares the output location for the exported ZIP file.
+
+```python
+data_dir = 'data'
+    os.makedirs(data_dir, exist_ok=True) ## creates a folder called 'data' - checks if it already exists and if not then creates it.
+```
 
 ### 2. Date validation
 
@@ -152,6 +160,10 @@ check response status
 ### 1. Temporary workspace
 
 Creates a temporary extraction directory so the archive contents can be processed safely before being moved into the main data folder.
+
+```python
+temp_dir = tempfile.mkdtemp()
+```
 
 ### 2. Discovering and extracting ZIP archives
 
