@@ -24,7 +24,7 @@ def extract_amp(startdate:str, enddate:str):
     os.makedirs(log_dir, exist_ok=True) # creates a folder called 'logs' - if it already exists then it's ok - i.e. doesnt show an error or do anything.
     log_filename = f'{log_dir}/extract_{timestamp}.log' # creating a string for the filename based on the timestamp
 
-    # Configuring log
+    # Configuring log - Note: if logger already set up in main script then that will be the default log - otherwise this will set up a log for extracts. I have left this in the function incase it is to be used elsewhere.
     logging.basicConfig(
         filename = log_filename,
         filemode = 'a',

@@ -11,7 +11,7 @@ import logging
 
 def unzip_all():
 
-    # Setting up logging (differentiating from extract/load logs by adding unzip_ precursor)
+    # Configuring log - Note: if logger already set up in main script then that will be the default log - otherwise this will set up a log for unzipping. I have left this in the function incase it is to be used elsewhere.
     timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') 
     log_dir = 'logs'
     os.makedirs(log_dir, exist_ok=True) 
