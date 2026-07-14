@@ -11,6 +11,30 @@ The workflow is designed to run in this order:
 3. Upload the JSON files to S3 for downstream ingestion.
 4. Use Snowflake to load the staged data into a raw table.
 
+The scripts in the `modules/` directory define the main processing functions in a modular way. In other words, each script focuses on one job, and the `main.py` script calls those jobs one after another to run the whole pipeline from start to finish.
+
+This makes the project easier to understand and easier to reuse. If you want to use one part later in a different project, you can still call that function on its own.
+
+## Logging
+
+Logging is set up in `main.py` so the whole pipeline writes clear messages in one place. The same logging setup is also left inside each function as a backup, but those lines are only used if logging has not already been configured. That way, the functions still work on their own, while `main.py` can manage the logging for the full workflow.
+
+Here is the basic logging pattern used in the project:
+
+```python
+import logging
+
+logging.basicConfig(
+    filename='logs/example.log',
+    filemode='a',
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+logger = logging.getLogger()
+logger.info('This is a log message')
+```
+
 ## Extraction Process
 
 This project uses `extract.py` to export raw Amplitude analytics data for a specified time range.
@@ -45,19 +69,7 @@ This step runs after `extract.py` and before the upload step so the loader gets 
 
 ### 1. Logging and output directories
 
-Creates directories for data and logs and generates a timestamped log file:
-
-```python
-log_dir = 'logs'
-os.makedirs(log_dir, exist_ok=True)
-log_filename = f'{log_dir}/{timestamp}.log'
-logging.basicConfig(
-    filename=log_filename,
-    filemode='a',
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-```
+Creates directories for data and logs and prepares the output location for the exported ZIP file.
 
 ### 2. Date validation
 
@@ -137,22 +149,9 @@ check response status
 
 ## Key `unzip.py` sections
 
-### 1. Temporary workspace and logging
+### 1. Temporary workspace
 
-Creates a temporary extraction directory and starts a timestamped log file:
-
-```python
-timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-log_dir = 'logs'
-os.makedirs(log_dir, exist_ok=True)
-log_filename = f'{log_dir}/unzip_{timestamp}.log'
-
-logging.basicConfig(
-    filename = log_filename,
-    format = '%(asctime)s - %(levelname)s - %(message)s',
-    level = logging.INFO
-)
-```
+Creates a temporary extraction directory so the archive contents can be processed safely before being moved into the main data folder.
 
 ### 2. Discovering and extracting ZIP archives
 
