@@ -22,9 +22,9 @@ def extract_amp(startdate:str, enddate:str):
     timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') # gives the date/time now
     log_dir = 'logs'
     os.makedirs(log_dir, exist_ok=True) # creates a folder called 'logs' - if it already exists then it's ok - i.e. doesnt show an error or do anything.
-    log_filename = f'{log_dir}/{timestamp}.log' # creating a string for the filename based on the timestamp
+    log_filename = f'{log_dir}/extract_{timestamp}.log' # creating a string for the filename based on the timestamp
 
-    # Configuring log
+    # Configuring log - Note: if logger already set up in main script then that will be the default log - otherwise this will set up a log for extracts. I have left this in the function incase it is to be used elsewhere.
     logging.basicConfig(
         filename = log_filename,
         filemode = 'a',
@@ -34,7 +34,7 @@ def extract_amp(startdate:str, enddate:str):
 
     # Selecting logger
     logger = logging.getLogger()
-    logger.info('Logger successfully initiated')
+    logger.info('Extraction Logger successfully initiated')
 
     # Checking that date arguments have been entered correctly
     start_dt = datetime.strptime(startdate, '%Y%m%dT%H')
@@ -102,7 +102,3 @@ def extract_amp(startdate:str, enddate:str):
         else:
             logger.error(f'Error - status message: {status}. Please fix')
             break
-
-
-if __name__ == '__main__':
-    extract_amp('20260601T00','20260602T00')
