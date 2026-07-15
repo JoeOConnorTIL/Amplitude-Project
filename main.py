@@ -1,7 +1,7 @@
 # Importing libraries
 import os, boto3, time, logging, requests, zipfile, gzip, shutil, tempfile, glob
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from modules.extract import extract_amp
 from modules.unzip import unzip_all
 from modules.load import load_to_s3
@@ -14,8 +14,11 @@ logger = initiate_log(timestamp, log_dir)
 logger.info('Logger Successfully Initiated')
 
 # Define timeframes
-s = '20260602T00'
-e = '20260603T00'
+# If running today - give me all of yesterday's data
+now = datetime.now(timezone.utc)
+yesterday = now - timedelta(days=1)
+s = yesterday.strftime('%Y%m%dT00')
+e = yesterday.strftime('%Y%m%dT23')
 
 logger = logging.getLogger()
 url = 'https://analytics.eu.amplitude.com/api/2/export'
