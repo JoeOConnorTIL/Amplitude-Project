@@ -39,10 +39,10 @@ max_retry = 3
 delay = 10
 
 # Access API and download zip to local folder
-extract_amp(url, s, e, api_key, secret_key, max_retry, delay)
+extract_amp(url, s, e, api_key, secret_key, data_dir, max_retry, delay)
 
 # Unzip the downloaded files
-unzip_all()
+unzip_all(data_dir)
 
 # Load json files to s3 bucket
 load_to_s3()

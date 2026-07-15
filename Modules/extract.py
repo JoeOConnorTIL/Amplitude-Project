@@ -14,7 +14,7 @@ secret_key=os.getenv('AMP_SECRET_KEY')
 max_retry = 3
 delay = 10
 
-def extract_amp(url, startdate:str, enddate:str, api_key, secret_key, max_retry=3, delay=10):
+def extract_amp(url, startdate:str, enddate:str, api_key, secret_key, data_dir, max_retry=3, delay=10):
     """
     Export Amplitude data for the given range.
 

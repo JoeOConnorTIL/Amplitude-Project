@@ -7,30 +7,32 @@ import glob
 from datetime import datetime
 import logging
 
+
+logger = logging.getLogger()
+data_dir = 'data'
 # Create a temporary extraction directory
 
-def unzip_all():
+def unzip_all(data_dir):
 
     # Configuring log - Note: if logger already set up in main script then that will be the default log - otherwise this will set up a log for unzipping. I have left this in the function incase it is to be used elsewhere.
-    timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') 
-    log_dir = 'logs'
-    os.makedirs(log_dir, exist_ok=True) 
-    log_filename = f'{log_dir}/unzip_{timestamp}.log'
+    #timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') 
+    #log_dir = 'logs'
+    #os.makedirs(log_dir, exist_ok=True) 
+    #log_filename = f'{log_dir}/unzip_{timestamp}.log'
 
-    logging.basicConfig(
-        filename = log_filename,
-        format = '%(asctime)s - %(levelname)s - %(message)s', 
-        level = logging.INFO
-    )
+    #logging.basicConfig(
+    #    filename = log_filename,
+    #    format = '%(asctime)s - %(levelname)s - %(message)s', 
+    #    level = logging.INFO
+    #)
 
-    logger = logging.getLogger()
+    # logger = logging.getLogger()
     logger.info('Unzipping Logger successfully initiated')
 
 
 
     temp_dir = tempfile.mkdtemp()
 
-    data_dir = 'data'
     os.makedirs(data_dir, exist_ok=True)
 
     # Find all .zip files under `data/` (including subdirectories)
