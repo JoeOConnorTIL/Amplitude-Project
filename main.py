@@ -10,20 +10,10 @@ from modules.logger import initiate_log
 # Setting up logging for pipeline:
 timestamp = datetime.now().strftime('%Y-%m-%d %H-%M-%S') # gives the date/time now
 log_dir = 'logs'
-#os.makedirs(log_dir, exist_ok=True) # Checks if a logs folder exist, if not then makes it.
-#log_filename = f'{log_dir}/amp_pipeline_{timestamp}.log' # creating a string for the log filename based on the timestamp
-
-# Configuring log
-#logging.basicConfig(
-#    filename = log_filename,
-#    filemode = 'a',
-#    format = '%(asctime)s - %(levelname)s - %(message)s', 
-#    level = logging.INFO                 # Any messages INFO or above will go into the logs.
-#)
 logger = initiate_log(timestamp, log_dir)
 logger.info('Logger Successfully Initiated')
-# Define timeframes
 
+# Define timeframes
 s = '20260602T00'
 e = '20260603T00'
 

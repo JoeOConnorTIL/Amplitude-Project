@@ -26,7 +26,8 @@ def load_to_s3(data_dir, AWS_BUCKET_NAME, s3_loc):
     # Writing functionality to loop through data files and upload them, and delete them from local file when done.
     # data_dir = 'data'
     files = os.listdir(data_dir)
-    files.remove('quarantine')
+    if 'quarantine' in files:
+        files.remove('quarantine')
     # s3_loc = 'python-import/'      # listing files in data folder
 
     for file in files:                # Iterating through the listed files
