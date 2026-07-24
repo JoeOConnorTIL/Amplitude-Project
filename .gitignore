@@ -5,6 +5,7 @@ data/
 *.csv 
 logs/
 *.log
+sample_json/
 
 # AWS Environment
 .aws_env
